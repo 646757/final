@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rick and Morty Styled Character Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a23, #1a0033);
+            color: #e0e0e0;
+        }
+
+        header {
+            background: #00ff88;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 5px solid #ff00ff;
+            box-shadow: 0 0 15px #00ff88;
+        }
+
+        #form {
+            display: inline-block;
+        }
+
+        .search {
+            padding: 10px 20px;
+            font-size: 18px;
+            border: 3px solid #ff00ff;
+            border-radius: 25px;
+            background: #1a0033;
+            color: #00ff88;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search::placeholder {
+            color: #ff66cc;
+            opacity: 0.7;
+        }
+
+        .search:focus {
+            box-shadow: 0 0 10px #ff00ff, 0 0 20px #00ff88;
+            background: #330066;
+        }
+
+        #main {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .user {
+            background: #330066;
+            border: 3px solid #00ff88;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 0 15px #ff00ff;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .user:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px #00ff88, 0 0 35px #ff00ff;
+        }
+
+        .user img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            border: 2px solid #ff66cc;
+        }
+
+        .user-info {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .user-info h1 {
+            color: #ff00ff;
+            font-size: 24px;
+            text-shadow: 0 0 5px #00ff88;
+        }
+
+        .user-info h3 {
+            color: #00ff88;
+            font-size: 20px;
+            margin: 5px 0;
+        }
+
+        .descripcion {
+            background: #1a0033;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #ff66cc;
+            color: #e0e0e0;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <form id="form">
+            <input type="text" id="search" class="search" placeholder="Buscar Personaje">
+        </form>
+    </header>
+    <main id="main">
+
+    </main>
+
+    <script>
+        const API_URL = 'https://hp-api.onrender.com/api/characters';
+        const API_URL2 = 'https://rickandmortyapi.com/api/character';
+        const main = document.getElementById('main');
+        const form = document.getElementById('form');
+        const search = document.getElementById('search');
+
+        getCharacters(API_URL, API_URL2);
+
+        async function getCharacters(hp_url, rm_url) {
+            const hp_res = await fetch(hp_url);
+            const hp_data = await hp_res.json();
+            showHPCharacters(hp_data.items || hp_data);
+
+            const rm_res = await fetch(rm_url);
+            const rm_data = await rm_res.json();
+            showRMCharacters(rm_data.results || rm_data);
+        }
+
+        function showHPCharacters(characters) {
+            main.innerHTML = '';
+            characters.forEach((char) => {
+                const { id, name, image, house, species } = char;
+                const charElement = document.createElement('div');
+                charElement.classList.add('user');
+                charElement.innerHTML = `
+                    <img src="${image}" alt="${name}">
+                    <div class="user-info">
+                        <h1>${id}</h1>
+                        <h3>${name}</h3>
+                        <br>
+                        ${house || 'Sin casa'}
+                    </div>
+                    <div class="descripcion">
+                        <p>Casa: ${house || 'Desconocida'} | Especie: ${species || 'Desconocida'}</p>
+                    </div>
+                `;
+                main.appendChild(charElement);
+            });
+        }
+
+        function showRMCharacters(characters) {
+            characters.forEach((char) => {
+                const { id, name, image, species, status, origin } = char;
+                const charElement = document.createElement('div');
+                charElement.classList.add('user');
+                charElement.innerHTML = `
+                    <img src="${image}" alt="${name}">
+                    <div class="user-info">
+                        <h1>${id}</h1>
+                        <h3>${name}</h3>
+                        <br>
+                        ${species}
+                    </div>
+                    <div class="descripcion">
+                        <p>Estado: ${status} | Especie: ${species} | Origen: ${origin.name}</p>
+                    </div>
+                `;
+                main.appendChild(charElement);
+            });
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const searchTerm = search.value.toLowerCase();
+            if (searchTerm && searchTerm !== '') {
+                getCharacters(API_URL + `?name=${searchTerm}`, API_URL2 + `?name=${searchTerm}`);
+                search.value = '';
+            } else {
+                window.location.reload();
+            }
+        });
+    </script>
+</body>
+</html>
